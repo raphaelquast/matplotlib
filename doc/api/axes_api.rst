@@ -513,6 +513,9 @@ Interactive
    Axes.get_navigate_mode
    Axes.set_navigate_mode
 
+   Axes.get_capture_navigation_events
+   Axes.set_capture_navigation_events
+
    Axes.start_pan
    Axes.drag_pan
    Axes.end_pan
