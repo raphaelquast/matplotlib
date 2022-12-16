@@ -617,10 +617,10 @@ class _AxesBase(martist.Artist):
             Set a fixed aspect for the Axes box, i.e. the ratio of height to
             width. See `~.axes.Axes.set_box_aspect` for details.
 
-        capture_navigation_events : bool or "auto"
+        capture_navigation_events : bool or "auto", default: "auto"
             Control whether pan/zoom events are passed through to Axes below
-            this one. See `~.axes.Axes.set_capture_navigation_events` for
-            details.
+            this one. "auto" is *True* for axes with an invisible patch and *False* 
+            otherwise.
 
         **kwargs
             Other optional keyword arguments:
