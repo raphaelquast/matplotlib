@@ -619,8 +619,8 @@ class _AxesBase(martist.Artist):
 
         capture_navigation_events : bool or "auto", default: "auto"
             Control whether pan/zoom events are passed through to Axes below
-            this one. "auto" is *True* for axes with an invisible patch and *False* 
-            otherwise.
+            this one. "auto" is *True* for axes with an invisible patch and
+            *False* otherwise.
 
         **kwargs
             Other optional keyword arguments:
