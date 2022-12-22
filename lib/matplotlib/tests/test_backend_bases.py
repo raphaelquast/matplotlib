@@ -404,7 +404,7 @@ def test_toolmanager_update_keymap():
 @pytest.mark.parametrize("tool", ["zoom", "pan"])
 @pytest.mark.parametrize("button", [MouseButton.LEFT, MouseButton.RIGHT])
 @pytest.mark.parametrize("patch_vis", [True, False])
-@pytest.mark.parametrize("capture_nav", [True, False])
+@pytest.mark.parametrize("capture_nav", [True, False, "auto"])
 def test_interactive_pan_zoom_events(tool, button, patch_vis, capture_nav):
     # Bottom axes: ax_b    Top axes: ax_t
     fig, ax_b = plt.subplots()
