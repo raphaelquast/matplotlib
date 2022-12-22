@@ -4648,7 +4648,7 @@ class _AxesBase(martist.Artist):
             self.yaxis.set_tick_params(which="both", labelright=False)
             if self.yaxis.offsetText.get_position()[0] == 1:
                 self.yaxis.offsetText.set_visible(False)
-    
+
     def set_capture_navigation_events(self, capture):
         """
         Set how pan/zoom events are forwarded to Axes below this one.
