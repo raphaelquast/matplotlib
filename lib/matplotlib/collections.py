@@ -322,7 +322,7 @@ class Collection(artist.Artist, cm.ScalarMappable):
                 paths.append(mpath.Path(np.column_stack([xs, ys]), path.codes))
             xs = self.convert_xunits(offsets[:, 0])
             ys = self.convert_yunits(offsets[:, 1])
-            offsets = np.column_stack([xs, ys])
+            offsets = np.ma.column_stack([xs, ys])
 
         if not transform.is_affine:
             paths = [transform.transform_path_non_affine(path)
@@ -545,9 +545,11 @@ class Collection(artist.Artist, cm.ScalarMappable):
         offsets = np.asanyarray(offsets)
         if offsets.shape == (2,):  # Broadcast (2,) -> (1, 2) but nothing else.
             offsets = offsets[None, :]
-        self._offsets = np.column_stack(
-            (np.asarray(self.convert_xunits(offsets[:, 0]), float),
-             np.asarray(self.convert_yunits(offsets[:, 1]), float)))
+        cstack = (np.ma.column_stack if isinstance(offsets, np.ma.MaskedArray)
+                  else np.column_stack)
+        self._offsets = cstack(
+            (np.asanyarray(self.convert_xunits(offsets[:, 0]), float),
+             np.asanyarray(self.convert_yunits(offsets[:, 1]), float)))
         self.stale = True
 
     def get_offsets(self):
@@ -1390,7 +1392,7 @@ class LineCollection(Collection):
             allowed).
         antialiaseds : bool or list of bool, default: :rc:`lines.antialiased`
             Whether to use antialiasing for each line.
-        zorder : int, default: 2
+        zorder : float, default: 2
             zorder of the lines once drawn.
 
         facecolors : color or list of color, default: 'none'

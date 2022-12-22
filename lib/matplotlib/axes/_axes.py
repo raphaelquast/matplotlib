@@ -2946,9 +2946,9 @@ class Axes(_AxesBase):
         basefmt : str, default: 'C3-' ('C2-' in classic mode)
             A format string defining the properties of the baseline.
 
-        orientation : str, default: 'vertical'
+        orientation : {'vertical', 'horizontal'}, default: 'vertical'
             If 'vertical', will produce a plot with stems oriented vertically,
-            otherwise the stems will be oriented horizontally.
+            If 'horizontal', the stems will be oriented horizontally.
 
         bottom : float, default: 0
             The y/x-position of the baseline (depending on orientation).
@@ -5826,9 +5826,9 @@ default: :rc:`scatter.edgecolors`
             The coordinates of the corners of quadrilaterals of a pcolormesh::
 
                 (X[i+1, j], Y[i+1, j])       (X[i+1, j+1], Y[i+1, j+1])
-                                      +-----+
-                                      |     |
-                                      +-----+
+                                      ●╶───╴●
+                                      │     │
+                                      ●╶───╴●
                     (X[i, j], Y[i, j])       (X[i, j+1], Y[i, j+1])
 
             Note that the column index corresponds to the x-coordinate, and
@@ -6068,9 +6068,9 @@ default: :rc:`scatter.edgecolors`
             The coordinates of the corners of quadrilaterals of a pcolormesh::
 
                 (X[i+1, j], Y[i+1, j])       (X[i+1, j+1], Y[i+1, j+1])
-                                      +-----+
-                                      |     |
-                                      +-----+
+                                      ●╶───╴●
+                                      │     │
+                                      ●╶───╴●
                     (X[i, j], Y[i, j])       (X[i, j+1], Y[i, j+1])
 
             Note that the column index corresponds to the x-coordinate, and

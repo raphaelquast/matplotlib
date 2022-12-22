@@ -7280,6 +7280,24 @@ def test_secondary_repr():
     assert repr(secax) == '<SecondaryAxis: >'
 
 
+@image_comparison(['axis_options.png'], remove_text=True, style='mpl20')
+def test_axis_options():
+    fig, axes = plt.subplots(2, 3)
+    for i, option in enumerate(('scaled', 'tight', 'image')):
+        # Draw a line and a circle fitting within the boundaries of the line
+        # The circle should look like a circle for 'scaled' and 'image'
+        # High/narrow aspect ratio
+        axes[0, i].plot((1, 2), (1, 3.2))
+        axes[0, i].axis(option)
+        axes[0, i].add_artist(mpatches.Circle((1.5, 1.5), radius=0.5,
+                                              facecolor='none', edgecolor='k'))
+        # Low/wide aspect ratio
+        axes[1, i].plot((1, 2.25), (1, 1.75))
+        axes[1, i].axis(option)
+        axes[1, i].add_artist(mpatches.Circle((1.5, 1.25), radius=0.25,
+                                              facecolor='none', edgecolor='k'))
+
+
 def color_boxes(fig, ax):
     """
     Helper for the tests below that test the extents of various axes elements
@@ -8431,3 +8449,11 @@ def test_scatter_color_repr_error():
         c = 'red\n'
         mpl.axes.Axes._parse_scatter_color_args(
             c, None, kwargs={}, xsize=2, get_next_color_func=get_next_color)
+
+
+def test_zorder_and_explicit_rasterization():
+    fig, ax = plt.subplots()
+    ax.set_rasterization_zorder(5)
+    ln, = ax.plot(range(5), rasterized=True, zorder=1)
+    with io.BytesIO() as b:
+        fig.savefig(b, format='pdf')

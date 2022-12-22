@@ -43,7 +43,7 @@ import numpy as np
 
 import matplotlib as mpl
 from matplotlib import (
-    _api, backend_tools as tools, cbook, colors, _docstring, textpath,
+    _api, backend_tools as tools, cbook, colors, _docstring, text,
     _tight_bbox, transforms, widgets, get_backend, is_interactive, rcParams)
 from matplotlib._pylab_helpers import Gcf
 from matplotlib.backend_managers import ToolManager
@@ -172,7 +172,7 @@ class RendererBase:
     def __init__(self):
         super().__init__()
         self._texmanager = None
-        self._text2path = textpath.TextToPath()
+        self._text2path = text.TextToPath()
         self._raster_depth = 0
         self._rasterizing = False
 
@@ -515,7 +515,7 @@ class RendererBase:
             The y location of the text baseline in display coords.
         s : str
             The TeX text string.
-        prop : `matplotlib.font_manager.FontProperties`
+        prop : `~matplotlib.font_manager.FontProperties`
             The font properties.
         angle : float
             The rotation angle in degrees anti-clockwise.
@@ -538,12 +538,12 @@ class RendererBase:
             The y location of the text baseline in display coords.
         s : str
             The text string.
-        prop : `matplotlib.font_manager.FontProperties`
+        prop : `~matplotlib.font_manager.FontProperties`
             The font properties.
         angle : float
             The rotation angle in degrees anti-clockwise.
         ismath : bool or "TeX"
-            If True, use mathtext parser. If "TeX", use *usetex* mode.
+            If True, use mathtext parser. If "TeX", use tex for rendering.
         mtext : `matplotlib.text.Text`
             The original text object to be rendered.
 
@@ -569,12 +569,18 @@ class RendererBase:
 
         Parameters
         ----------
-        prop : `matplotlib.font_manager.FontProperties`
-            The font property.
+        x : float
+            The x location of the text in display coords.
+        y : float
+            The y location of the text baseline in display coords.
         s : str
             The text to be converted.
+        prop : `~matplotlib.font_manager.FontProperties`
+            The font property.
+        angle : float
+            Angle in degrees to render the text at.
         ismath : bool or "TeX"
-            If True, use mathtext parser. If "TeX", use *usetex* mode.
+            If True, use mathtext parser. If "TeX", use tex for rendering.
         """
 
         text2path = self._text2path
@@ -599,18 +605,22 @@ class RendererBase:
 
     def _draw_text_as_path(self, gc, x, y, s, prop, angle, ismath):
         """
-        Draw the text by converting them to paths using textpath module.
+        Draw the text by converting them to paths using `.TextToPath`.
 
         Parameters
         ----------
-        prop : `matplotlib.font_manager.FontProperties`
-            The font property.
+        x : float
+            The x location of the text in display coords.
+        y : float
+            The y location of the text baseline in display coords.
         s : str
             The text to be converted.
-        usetex : bool
-            Whether to use usetex mode.
+        prop : `~matplotlib.font_manager.FontProperties`
+            The font property.
+        angle : float
+            Angle in degrees to render the text at.
         ismath : bool or "TeX"
-            If True, use mathtext parser. If "TeX", use *usetex* mode.
+            If True, use mathtext parser. If "TeX", use tex for rendering.
         """
         path, transform = self._get_text_path_transform(
             x, y, s, prop, angle, ismath)
@@ -1316,11 +1326,13 @@ class LocationEvent(Event):
     xdata, ydata : float or None
         Data coordinates of the mouse within *inaxes*, or *None* if the mouse
         is not over an Axes.
+    modifiers : frozenset
+        The keyboard modifiers currently being pressed (except for KeyEvent).
     """
 
     lastevent = None  # The last event processed so far.
 
-    def __init__(self, name, canvas, x, y, guiEvent=None):
+    def __init__(self, name, canvas, x, y, guiEvent=None, *, modifiers=None):
         super().__init__(name, canvas, guiEvent=guiEvent)
         # x position - pixels from left of canvas
         self.x = int(x) if x is not None else x
@@ -1329,6 +1341,7 @@ class LocationEvent(Event):
         self.inaxes = None  # the Axes instance the mouse is over
         self.xdata = None   # x coord of mouse in data coords
         self.ydata = None   # y coord of mouse in data coords
+        self.modifiers = frozenset(modifiers if modifiers is not None else [])
 
         if x is None or y is None:
             # cannot check if event was in Axes if no (x, y) info
@@ -1387,7 +1400,9 @@ class MouseEvent(LocationEvent):
            This key is currently obtained from the last 'key_press_event' or
            'key_release_event' that occurred within the canvas.  Thus, if the
            last change of keyboard state occurred while the canvas did not have
-           focus, this attribute will be wrong.
+           focus, this attribute will be wrong.  On the other hand, the
+           ``modifiers`` attribute should always be correct, but it can only
+           report on modifier keys.
 
     step : float
         The number of scroll steps (positive for 'up', negative for 'down').
@@ -1409,8 +1424,9 @@ class MouseEvent(LocationEvent):
     """
 
     def __init__(self, name, canvas, x, y, button=None, key=None,
-                 step=0, dblclick=False, guiEvent=None):
-        super().__init__(name, canvas, x, y, guiEvent=guiEvent)
+                 step=0, dblclick=False, guiEvent=None, *, modifiers=None):
+        super().__init__(
+            name, canvas, x, y, guiEvent=guiEvent, modifiers=modifiers)
         if button in MouseButton.__members__.values():
             button = MouseButton(button)
         if name == "scroll_event" and button is None:
