@@ -405,7 +405,9 @@ def test_toolmanager_update_keymap():
 @pytest.mark.parametrize("button", [MouseButton.LEFT, MouseButton.RIGHT])
 @pytest.mark.parametrize("patch_vis", [True, False])
 @pytest.mark.parametrize("capture_nav", [True, False, "auto"])
-def test_interactive_pan_zoom_events(tool, button, patch_vis, capture_nav):
+@pytest.mark.parametrize("t_s", ["twin", "share"])
+def test_interactive_pan_zoom_events(tool, button, patch_vis,
+                                     capture_nav, t_s):
     # Bottom axes: ax_b    Top axes: ax_t
     fig, ax_b = plt.subplots()
     ax_t = fig.add_subplot(221, zorder=99)
@@ -413,20 +415,30 @@ def test_interactive_pan_zoom_events(tool, button, patch_vis, capture_nav):
     ax_t.patch.set_visible(patch_vis)
 
     # ----------------------------
-    # TODO check why using ax.sharex() causes a race-condition!!!
+    if t_s == "share":
+        ax_t_twin = fig.add_subplot(222)
+        ax_t_twin.sharex(ax_t)
+        ax_t_twin.sharey(ax_t)
 
-    # ax_t_twin = fig.add_subplot(222)
-    # ax_t_twin.sharex(ax_t)
-    # # ax_t_twin.sharey(ax_t)
-    # ax_t_twin.patch.set_facecolor("r")
+        ax_b_twin = fig.add_subplot(223)
+        ax_b_twin.sharex(ax_b)
+        ax_b_twin.sharey(ax_b)
+    elif t_s == "twin":
+        ax_t_twin = ax_t.twinx()
+        ax_b_twin = ax_b.twinx()
 
-    # ax_b_twin = fig.add_subplot(223)
-    # ax_b_twin.sharex(ax_b)
-    # # ax_b_twin.sharey(ax_b)
-    # ax_b_twin.patch.set_facecolor("b")
+    # just some styling to simplify manual checks
+    ax_t.set_label("ax_t")
+    ax_t.patch.set_facecolor((1, 0, 0, 0.5))
 
-    ax_t_twin = ax_t.twinx()
-    ax_b_twin = ax_b.twinx()
+    ax_t_twin.set_label("ax_t_twin")
+    ax_t_twin.patch.set_facecolor("r")
+
+    ax_b.set_label("ax_b")
+    ax_b.patch.set_facecolor((0, 0, 1, 0.5))
+
+    ax_b_twin.set_label("ax_b_twin")
+    ax_b_twin.patch.set_facecolor("b")
 
     # ----------------------------
 
@@ -504,7 +516,7 @@ def test_interactive_pan_zoom_events(tool, button, patch_vis, capture_nav):
             ax_b.start_pan(*s0, button)
             xlim_b, ylim_b = ax_b._get_pan_points(
                 button, None, *s1).T.astype(float)
-            ax_b.end_pan
+            ax_b.end_pan()
         elif ax_t.get_capture_navigation_events() is True:
             xlim_b = init_xlim
             ylim_b = init_ylim
@@ -513,7 +525,7 @@ def test_interactive_pan_zoom_events(tool, button, patch_vis, capture_nav):
                 ax_b.start_pan(*s0, button)
                 xlim_b, ylim_b = ax_b._get_pan_points(
                     button, None, *s1).T.astype(float)
-                ax_b.end_pan
+                ax_b.end_pan()
             else:
                 xlim_b = init_xlim
                 ylim_b = init_ylim
