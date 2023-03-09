@@ -3342,10 +3342,15 @@ class NavigationToolbar2:
             ax.start_pan(event.x, event.y, event.button)
             axes = [ax]  # A set to collect all axes that have been zoomed.
 
-            # Treat all twinned axes (irrespective of zorder & patch).
-            twinned_axes = ax._twinned_axes.get_siblings(ax)
-            for ax in twinned_axes:
-                axes.append(ax)
+            # Treat all shared axes
+            shared_axes = {
+                sibling for name in ax._axis_names
+                for sibling in ax._shared_axes[name].get_siblings(ax)
+                if sibling is not ax}
+
+            for ax in shared_axes:
+                if ax not in axes:
+                    axes.append(ax)
 
         else:
             zorder, axes = -1, list()
@@ -3363,12 +3368,19 @@ class NavigationToolbar2:
                     sibling for name in ax._axis_names
                     for sibling in ax._shared_axes[name].get_siblings(ax)
                     if sibling in axes_capture[True].get(z, [])), False)
-                if shared_ax is False and ax:
-                    axes.append(ax)
 
-                    # Treat all twinned axes (irrespective of zorder & patch).
-                    twinned_axes = ax._twinned_axes.get_siblings(ax)
-                    for ax in twinned_axes:
+                if shared_ax is False and ax:
+                    if ax not in axes:
+                        axes.append(ax)
+
+                # Treat all shared axes
+                shared_axes = {
+                    sibling for name in ax._axis_names
+                    for sibling in ax._shared_axes[name].get_siblings(ax)
+                    if sibling is not ax}
+
+                for ax in shared_axes:
+                    if ax not in axes:
                         axes.append(ax)
 
         id_zoom = self.canvas.mpl_connect(
