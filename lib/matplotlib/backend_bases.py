@@ -3229,12 +3229,9 @@ class NavigationToolbar2:
             ax.start_pan(event.x, event.y, event.button)
             axes = {ax}  # A set to collect all axes that have been zoomed.
 
-            # Treat all shared axes (irrespective of zorder & patch).
-            shared_axes = {
-                sibling for name in ax._axis_names
-                for sibling in ax._shared_axes[name].get_siblings(ax)}
-
-            for ax in (shared_axes - axes):
+            # Treat all twinned axes (irrespective of zorder & patch).
+            twinned_axes = set(ax._twinned_axes.get_siblings(ax))
+            for ax in (twinned_axes - axes):
                 ax.start_pan(event.x, event.y, event.button)
                 axes.add(ax)
 
@@ -3247,6 +3244,7 @@ class NavigationToolbar2:
             for ax in axes_capture[False].get(z, []):
                 if ax in axes:
                     continue
+
                 # Make sure that there is no shared axes with a visible
                 # patch at the same zorder.
                 # (otherwise ALL shared axes would trigger)
@@ -3254,9 +3252,16 @@ class NavigationToolbar2:
                     sibling for name in ax._axis_names
                     for sibling in ax._shared_axes[name].get_siblings(ax)
                     if sibling in axes_capture[True].get(z, [])), False)
+
                 if shared_ax is False and ax:
                     ax.start_pan(event.x, event.y, event.button)
                     axes.add(ax)
+
+                    # Treat all twinned axes (irrespective of zorder & patch).
+                    twinned_axes = set(ax._twinned_axes.get_siblings(ax))
+                    for ax in (twinned_axes - axes):
+                        ax.start_pan(event.x, event.y, event.button)
+                        axes.add(ax)
 
         self.canvas.mpl_disconnect(self._id_drag)
         id_drag = self.canvas.mpl_connect("motion_notify_event", self.drag_pan)
@@ -3337,13 +3342,9 @@ class NavigationToolbar2:
             ax.start_pan(event.x, event.y, event.button)
             axes = [ax]  # A set to collect all axes that have been zoomed.
 
-            # Treat all shared axes (irrespective of zorder & patch).
-            shared_axes = {
-                sibling for name in ax._axis_names
-                for sibling in ax._shared_axes[name].get_siblings(ax)
-                if sibling is not ax}
-
-            for ax in shared_axes:
+            # Treat all twinned axes (irrespective of zorder & patch).
+            twinned_axes = ax._twinned_axes.get_siblings(ax)
+            for ax in twinned_axes:
                 axes.append(ax)
 
         else:
@@ -3364,6 +3365,11 @@ class NavigationToolbar2:
                     if sibling in axes_capture[True].get(z, [])), False)
                 if shared_ax is False and ax:
                     axes.append(ax)
+
+                    # Treat all twinned axes (irrespective of zorder & patch).
+                    twinned_axes = ax._twinned_axes.get_siblings(ax)
+                    for ax in twinned_axes:
+                        axes.append(ax)
 
         id_zoom = self.canvas.mpl_connect(
             "motion_notify_event", self.drag_zoom)
